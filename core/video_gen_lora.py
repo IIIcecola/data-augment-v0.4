@@ -4,6 +4,7 @@ import argparse
 import cv2
 import random
 from tqdm import tqdm
+from datetime import datetime
 import traceback
 
 # 支持的视频格式
@@ -191,7 +192,13 @@ def main():
             continue
 
         # 为每个prompt生成视频
-        for prompt in prompt_list:
+        prompt_progress = tqdm(prompt_list, desc=f"视频 {os.path.basename(video_path)} 变体生成", leave=False)
+        for prompt in prompt_progress:
+            # 打印当前处理时间和prompt信息（写入log）
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            print(f"\n{current_time} - 正在处理prompt：{prompt[:50]}...")  # 只打印前50字符避免过长
+            prompt_progress.set_postfix({"当前时间": current_time})  # 子进度条显示时间
+            
             generate_video(
                 client=client,
                 img_path=first_frame_path,
@@ -200,6 +207,7 @@ def main():
                 width=args.width,
                 height=args.height
             )
+        prompt_progress.close()
 
     print("\n" + "="*50)
     print(f"批量处理完成！")
